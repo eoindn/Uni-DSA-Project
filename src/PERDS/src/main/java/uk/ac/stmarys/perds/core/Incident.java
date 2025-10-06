@@ -14,6 +14,15 @@ class Incident {
     private LocalDateTime localDateTime;
 
 
+    public Incident(String id, String description, boolean resolved, Location location, IncidentSeverity incidentSeverity) {
+        this.id = id;
+        this.description = description;
+        this.resolved = resolved;
+        this.location = location;
+        this.incidentSeverity = incidentSeverity;
+
+    }
+
     public String getId() { return id; }
     public Location getLocation() { return location;}
     public IncidentSeverity getSeverity() { return incidentSeverity; }

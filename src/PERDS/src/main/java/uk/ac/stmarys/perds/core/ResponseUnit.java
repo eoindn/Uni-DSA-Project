@@ -9,6 +9,12 @@ class ResponseUnit{
     private String type;
     private boolean available;
 
+    public ResponseUnit(String id, Location location, String type, boolean available) {
+        this.id = id;
+        this.location = location;
+        this.type = type;
+        this.available = available;
+    }
 
     public String getId() {
         return id;
