@@ -7,9 +7,9 @@ Create a basic emergency network with simple incident registration and nearest-u
 
 ## Tasks
 - [ done ] Create core domain models
-- [ ] Build basic graph structure
-- [ ] Implement nearest-unit allocation
-- [ done (in the main file of the core package) ] Write basic tests
+- [ done ] Build basic graph structure
+- [ done ] Implement nearest-unit allocation
+- [ done ] (in the main file of the core package) ] Write basic tests
 
 ## Design Decisions
 
