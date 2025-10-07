@@ -1,10 +1,11 @@
 package PERDS.src.main.java.uk.ac.stmarys.perds.core;
 
 
+import javax.swing.plaf.PanelUI;
 import java.time.LocalDateTime;
 
 
-class Incident {
+public class Incident {
 
     private String id;
     private String description;
@@ -24,6 +25,7 @@ class Incident {
     }
 
     public String getId() { return id; }
+    public String getDescription() { return description; }
     public Location getLocation() { return location;}
     public IncidentSeverity getSeverity() { return incidentSeverity; }
     public boolean isResolved() { return resolved; }

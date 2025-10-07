@@ -10,6 +10,7 @@ Create a basic emergency network with simple incident registration and nearest-u
 - [ done ] Build basic graph structure
 - [ done ] Implement nearest-unit allocation
 - [ done ] (in the main file of the core package) ] Write basic tests
+- mostly done in first day :)
 
 ## Design Decisions
 
@@ -22,28 +23,39 @@ Create a basic emergency network with simple incident registration and nearest-u
 - **Fast O(1) look up** to find a location via its ID
 - **Efficient Storage** Only stores necessary information
 - **Its scalable** We can add MANY locations without having to sacrifice performance
+- 
 
 ### Why Adjacency List for Graph?
 - **Space efficiency:** O(V + E) where V = vertices (locations), E = edges (connections)
 - **Easy to traverse:** Can quickly find all neighbors of a location
 - **Dynamic:** Easy to add/remove connections
+- 
 
 ### Why Bidirectional Connections?
 - Emergency vehicles need to travel both ways on roads
 - When we connect London ↔ Manchester, both cities need to know about each other
 - Makes route-finding algorithms work correctly later
 
----
-
-
-
-
-
 ### Network Structure (Graph)
 - ✅ **EmergencyNetwork.java** - Main graph structure
     - Uses `Map<String, Location>` to store locations (like a dictionary)
     - Uses `Map<String, List<String>>` for connections (adjacency list)
     - Bidirectional connections between locations
+
+---
+## Allocation Algorithm Completed!
+
+### Implementation
+- BasicAllocator class with findNearestUnit() method
+- Loops through all units: O(n) time complexity
+- Checks availability before calculating distance
+- Uses simple distance calculation between coordinates
+
+### Testing Results
+- Successfully dispatches nearest available unit
+- Correctly identifies 0km when unit at incident location
+- Marks dispatched units as unavailable
+- 
 
 ### Data Structures Used
 - Location: Represents cities/dispatch centers
@@ -85,3 +97,7 @@ Create a basic emergency network with simple incident registration and nearest-u
 ## Complexity Analysis
 - O(1) look up for locations via location ID
 - O(V + E) for adjacency lists where V = vertices(locations) and E = edges(locations)
+
+
+## Phase 1 Status: COMPLETE ✅
+Ready to move to Phase 2 (50-59%)

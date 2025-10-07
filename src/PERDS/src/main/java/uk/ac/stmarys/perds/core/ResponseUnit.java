@@ -1,7 +1,7 @@
 package PERDS.src.main.java.uk.ac.stmarys.perds.core;
 
 
-class ResponseUnit{
+public class ResponseUnit{
 
 
     private String id;
