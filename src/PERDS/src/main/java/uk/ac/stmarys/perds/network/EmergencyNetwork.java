@@ -1,5 +1,6 @@
 package PERDS.src.main.java.uk.ac.stmarys.perds.network;
 
+import PERDS.src.main.java.uk.ac.stmarys.perds.core.Incident;
 import PERDS.src.main.java.uk.ac.stmarys.perds.core.Location;
 import PERDS.src.main.java.uk.ac.stmarys.perds.core.ResponseUnit;
 
@@ -13,7 +14,7 @@ import java.util.stream.Collectors;
 public class EmergencyNetwork {
 
 
-    private Map<String, List<String>> connections;
+    private Map<String, List<Connection>> connections;; //changed map to take Connection object from new class
     private Map<String, Location> locations;
     private List<ResponseUnit> Responseunits;
 
@@ -42,7 +43,7 @@ public class EmergencyNetwork {
 
     //------------------------------------------------------------//
 
-    public List<String> getConnections(String locationId) {
+    public List<Connection> getConnections(String locationId) {
         return this.connections.get(locationId);
     }
 
@@ -57,6 +58,11 @@ public class EmergencyNetwork {
     public Map<String, Location> getLocations() {
         return locations;
     }
+
+
+    //inner class to represent a connection between locations
+
+
 
     //------------------------------------------------------------//
 
@@ -77,30 +83,70 @@ public class EmergencyNetwork {
 
 
 
-
-
-    //------------------------------------------------------------//
-
-    public void addConnection(String location1Id, String location2Id) {
-        this.connections.get(location1Id).add(location2Id);
-        this.connections.get(location2Id).add(location1Id);
-
-        System.out.println("Connected to " + location1Id + " <-> " + location2Id);
-
-
-    }
-
-    //------------------------------------------------------------//
-
-
-
-
-
-    public void printAllLocations() {
+    public void printAllLocations() {  // ← MOVE THIS INSIDE THE CLASS
         System.out.println("\n=== All Locations in Network ===");
         for (Location loc : locations.values()) {
             System.out.println("  • " + loc.getName() + " (" + loc.getId() + ")");
         }
         System.out.println("Total: " + locations.size() + " locations\n");
     }
+
+
+
+
+
+    //------------------------------------------------------------//
+
+    public void addConnection(String location1Id, String location2Id, double distance, double travelTime) {
+        // create connections in both directions
+        this.connections.get(location1Id).add(new Connection(location2Id, distance, travelTime));
+        this.connections.get(location2Id).add(new Connection(location1Id, distance, travelTime));
+
+        System.out.println("Connected: " + location1Id + " <-> " + location2Id +
+                " (" + distance + "km, " + travelTime + "min)");
+    }
+
+    public double getConnectionTme(String location1Id, String location2Id) {
+        List<Connection> connectionsFromLocation1 = connections.get(location1Id);
+
+        for(Connection conn : connectionsFromLocation1) {
+            if(conn.getDestinationId().equals(location2Id)) {
+                return conn.getDistance();
+            }
+        }
+        return 0;
+    }
+
+    public static class Connection {
+        private String destinationId;
+        private double distance;      // in kilometers
+        private double travelTime;    // in minutes
+
+        public Connection(String destinationId, double distance, double travelTime) {
+            this.destinationId = destinationId;
+            this.distance = distance;
+            this.travelTime = travelTime;
+        }
+
+        // Getters
+        public String getDestinationId() { return destinationId; }
+        public double getDistance() { return distance; }
+        public double getTravelTime() { return travelTime; }
+
+        // Setters for dynamic updates
+        public void setDistance(double distance) { this.distance = distance; }
+        public void setTravelTime(double travelTime) { this.travelTime = travelTime; }
+
+
+    }
+
+
 }
+
+//------------------------------------------------------------//
+
+
+
+
+
+

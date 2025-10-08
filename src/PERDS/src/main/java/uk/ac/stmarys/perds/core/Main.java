@@ -4,6 +4,7 @@ package PERDS.src.main.java.uk.ac.stmarys.perds.core;
 import PERDS.src.main.java.uk.ac.stmarys.perds.allocation.BasicAllocator;
 import PERDS.src.main.java.uk.ac.stmarys.perds.network.EmergencyNetwork;
 
+import java.sql.Connection;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -18,6 +19,7 @@ public class Main {
 
         EmergencyNetwork network = new EmergencyNetwork();
         BasicAllocator allocator = new BasicAllocator(network);
+
 
         // Create locations
         Location london = new Location("LOC001", "London", 51.5074, -0.1278);
@@ -37,13 +39,14 @@ public class Main {
         //------------------------------------------------------------//
 
         System.out.println("\nCreating connections...");
-        network.addConnection("LOC001", "LOC002");  // London ↔ Manchester
-        network.addConnection("LOC001", "LOC003");  // London ↔ Birmingham
-        network.addConnection("LOC002", "LOC003");  // Manchester ↔ Birmingham
-        network.addConnection("LOC002", "LOC004");  // Manchester ↔ Liverpool
+        network.addConnection("LOC001", "LOC002",330,260);  // London ↔ Manchester
+        network.addConnection("LOC001", "LOC003",163,120);  // London ↔ Birmingham
+        network.addConnection("LOC002", "LOC003",135,90);  // Manchester ↔ Birmingham
+        network.addConnection("LOC002", "LOC004",56,45);
+        System.out.println("\n");// Manchester ↔ Liverpool
+        System.out.println();
 
         //------------------------------------------------------------//
-
         //unit type like vehicles such as fire engines and what not
         ResponseUnit ambulance = new ResponseUnit("UNIT001", london, "AMBULANCE", true);
         ResponseUnit ambulance2 = new ResponseUnit("UNIT002", manchester, "AMBULANCE", true);  // Change to UNIT002
@@ -62,8 +65,8 @@ public class Main {
         System.out.println("Retrieved location: " + retrieved.getName());  // Now works!
         System.out.println("Getting connections for london");
 
-        List<String> londonConnections = network.getConnections("LOC001");
-        System.out.println("London connects to: " + londonConnections);
+        List<EmergencyNetwork.Connection> londonConnections = network.getConnections("LOC001");
+        System.out.println("London connects to: " + londonConnections.toString());
 
         System.out.println("Unit: " + ambulance.getType());
         System.out.println("Incident at: " + fire.getLocation().getName());
@@ -80,11 +83,22 @@ public class Main {
 
         ResponseUnit dispatched = allocator.findNearestUnit(fire);
 
+        String dispatchedLocationId = dispatched.getLocation().getId();
+        String incidentLocationId = fire.getLocation().getId();
+
 
         if (dispatched != null) {
             System.out.println("Incident: " + fire.getDescription() + " at " + fire.getLocation().getName());
             System.out.println("Dispatching: " + dispatched.getId() + " (" + dispatched.getType() + ")");
             System.out.println("From: " + dispatched.getLocation().getName());
+            double time = network.getConnectionTme(dispatchedLocationId, incidentLocationId);
+            if (time != -1) {  // Changed from != 0 to != -1 (getConnectionTime returns -1 if not connected)
+                System.out.println("Travel time from " + dispatched.getLocation().getName() +
+                        " to " + fire.getLocation().getName() + ": " + time + " minutes");
+            } else {
+                System.out.println("Locations not directly connected");
+            }
+
 
             double distance = network.calculateDistance(dispatched.getLocation(), fire.getLocation());
             System.out.println("Distance: " + distance + " km");
@@ -94,6 +108,7 @@ public class Main {
         } else {
             System.out.println("No available units!");
         }
+        System.out.println( );
 
 
 
