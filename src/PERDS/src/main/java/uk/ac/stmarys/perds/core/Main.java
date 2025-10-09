@@ -4,11 +4,9 @@ package PERDS.src.main.java.uk.ac.stmarys.perds.core;
 import PERDS.src.main.java.uk.ac.stmarys.perds.allocation.BasicAllocator;
 import PERDS.src.main.java.uk.ac.stmarys.perds.network.EmergencyNetwork;
 import PERDS.src.main.java.uk.ac.stmarys.perds.network.NetworkManager;
+import PERDS.src.main.java.uk.ac.stmarys.perds.scheduling.IncidentQueue;
 
-import java.sql.Connection;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 
 public class Main {
 
@@ -21,6 +19,8 @@ public class Main {
         EmergencyNetwork network = new EmergencyNetwork();
         BasicAllocator allocator = new BasicAllocator(network);
         NetworkManager manager = new NetworkManager(network);
+        IncidentQueue incidentQueue = new IncidentQueue();
+
 
 
         // Create locations
@@ -64,7 +64,7 @@ public class Main {
         //------------------------------------------------------------//
 
 
-        System.out.println("Retrieved location: " + retrieved.getName());  // Now works!
+        System.out.println("Retrieved location: " + retrieved.getName());
         System.out.println("Getting connections for london");
 
         List<EmergencyNetwork.Connection> londonConnections = network.getConnections("LOC001");
@@ -73,7 +73,7 @@ public class Main {
         System.out.println("Unit: " + ambulance.getType());
         System.out.println("Incident at: " + fire.getLocation().getName());
         System.out.println("Severity: " + fire.getSeverity());
-        System.out.println("Got location: " + retrieved.getName() + "\n");  // Now works!
+        System.out.println("Got location: " + retrieved.getName() + "\n");
 
 
         System.out.println("Checking response units...");
@@ -92,7 +92,6 @@ public class Main {
 
         System.out.println("\n=== Testing Dynamic Updates ===");
 
-// Create the network manager
 
 
 // Show original connection time
@@ -110,6 +109,31 @@ public class Main {
 // Simulate road closure - remove a connection
         System.out.println("\nSimulating road closure...");
         manager.removeConnection("LOC002", "LOC004");  // Close Manchester-Liverpool road
+
+        Incident incident1 = new Incident("INC001", "Minor injury", false, london, IncidentSeverity.LOW);
+        Incident incident2 = new Incident("INC002", "House fire", false, manchester, IncidentSeverity.HIGH);
+        Incident incident3 = new Incident("INC003", "Heart attack", false, birmingham, IncidentSeverity.CRITICAL);
+        Incident incident4 = new Incident("INC004", "Car accident", false, liverpool, IncidentSeverity.MEDIUM);
+
+// Add them in random order
+        incidentQueue.addIncident(incident1);  // LOW
+        incidentQueue.addIncident(incident2);  // HIGH
+        incidentQueue.addIncident(incident3);  // CRITICAL
+        incidentQueue.addIncident(incident4);  // MEDIUM
+
+        System.out.println("\nQueue size: " + incidentQueue.Size());
+
+// Process them - they should come out in priority order!
+        System.out.println("\n=== Processing Incidents by Priority ===");
+        while (incidentQueue.hasIncidents()) {
+            Incident next = incidentQueue.getNext();
+            System.out.println("  → " + next.getDescription() + " at " + next.getLocation().getName());
+        }
+
+
+
+
+
 
 // Try to get time for closed road
         double closedTime = network.getConnectionTme("LOC002", "LOC004");
