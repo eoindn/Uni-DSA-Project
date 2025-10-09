@@ -3,6 +3,7 @@ package PERDS.src.main.java.uk.ac.stmarys.perds.core;
 
 import PERDS.src.main.java.uk.ac.stmarys.perds.allocation.BasicAllocator;
 import PERDS.src.main.java.uk.ac.stmarys.perds.network.EmergencyNetwork;
+import PERDS.src.main.java.uk.ac.stmarys.perds.network.NetworkManager;
 
 import java.sql.Connection;
 import java.util.Arrays;
@@ -19,6 +20,7 @@ public class Main {
 
         EmergencyNetwork network = new EmergencyNetwork();
         BasicAllocator allocator = new BasicAllocator(network);
+        NetworkManager manager = new NetworkManager(network);
 
 
         // Create locations
@@ -86,6 +88,33 @@ public class Main {
         String dispatchedLocationId = dispatched.getLocation().getId();
         String incidentLocationId = fire.getLocation().getId();
 
+        // After creating your network and connections...
+
+        System.out.println("\n=== Testing Dynamic Updates ===");
+
+// Create the network manager
+
+
+// Show original connection time
+
+        double originalTime = network.getConnectionTme("LOC001", "LOC002");
+        System.out.println("Original London-Manchester time: " + originalTime + " minutes");
+
+// Simulate traffic congestion - double the travel time!
+        manager.updateConnectionTime("LOC001", "LOC002", 480);  // Was 240, now 480
+
+// Check the updated time
+        double newTime = network.getConnectionTme("LOC001", "LOC002");
+        System.out.println("After traffic update: " + newTime + " minutes");
+
+// Simulate road closure - remove a connection
+        System.out.println("\nSimulating road closure...");
+        manager.removeConnection("LOC002", "LOC004");  // Close Manchester-Liverpool road
+
+// Try to get time for closed road
+        double closedTime = network.getConnectionTme("LOC002", "LOC004");
+        System.out.println("Manchester-Liverpool time: " + (closedTime == -1 ? "ROAD CLOSED" : closedTime + " min"));
+
 
         if (dispatched != null) {
             System.out.println("Incident: " + fire.getDescription() + " at " + fire.getLocation().getName());
@@ -109,6 +138,8 @@ public class Main {
             System.out.println("No available units!");
         }
         System.out.println( );
+
+
 
 
 
