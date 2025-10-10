@@ -16,7 +16,7 @@ public class IncidentQueue {
             @Override
             //creating priority queue that sorts by severity
             public int compare(Incident i1, Incident i2){
-                return i1.getSeverity().getPriority() - i2.getSeverity().getPriority();
+                return i2.getSeverity().getPriority() - i1.getSeverity().getPriority();
             }});}
 
 

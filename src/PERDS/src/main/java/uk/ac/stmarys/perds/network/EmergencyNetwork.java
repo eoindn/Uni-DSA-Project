@@ -17,12 +17,24 @@ public class EmergencyNetwork {
     private Map<String, List<Connection>> connections;; //changed map to take Connection object from new class
     private Map<String, Location> locations;
     private List<ResponseUnit> Responseunits;
+    private IncidentQueue incidentQueue;
 
 
     public EmergencyNetwork() {
         this.locations = new HashMap<>();
         this.connections = new HashMap<>();
         this.Responseunits = new ArrayList<>();
+        this.incidentQueue = new IncidentQueue();
+    }
+
+    public IncidentQueue getIncidentQueue() {
+        return incidentQueue;
+    }
+
+    public void reportIncident(Incident incident){
+        incidentQueue.addIncident(incident);
+        System.out.println("New incident for " + incident.getDescription() + " at " + incident.getLocation() + " with severity "
+        + incident.getSeverity());
     }
 
     public void addUnit(ResponseUnit unit) {

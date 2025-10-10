@@ -1,35 +1,44 @@
 package PERDS.src.main.java.uk.ac.stmarys.perds.core;
 
-
 import PERDS.src.main.java.uk.ac.stmarys.perds.allocation.BasicAllocator;
 import PERDS.src.main.java.uk.ac.stmarys.perds.network.EmergencyNetwork;
 import PERDS.src.main.java.uk.ac.stmarys.perds.network.NetworkManager;
-import PERDS.src.main.java.uk.ac.stmarys.perds.scheduling.IncidentQueue;
-
-import java.util.List;
+import PERDS.src.main.java.uk.ac.stmarys.perds.scheduling.Dispatcher;
 
 public class Main {
 
-    //Test run to make sure everything is running smoothly
     public static void main(String[] args) {
 
-
-
-
+        // Initialize core systems
         EmergencyNetwork network = new EmergencyNetwork();
         BasicAllocator allocator = new BasicAllocator(network);
         NetworkManager manager = new NetworkManager(network);
-        IncidentQueue incidentQueue = new IncidentQueue();
+        Dispatcher dispatcher = new Dispatcher(network, allocator);
 
+        // Setup network
+        setupNetwork(network);
 
+        // Register response units
+        registerUnits(network);
+
+        // Test dynamic updates
+        testDynamicUpdates(network, manager);
+
+        // Test concurrent incident management
+        testIncidentManagement(network, dispatcher);
+    }
+
+    /**
+     * Setup the emergency network with locations and connections
+     */
+    private static void setupNetwork(EmergencyNetwork network) {
+        System.out.println("=== SETTING UP EMERGENCY NETWORK ===\n");
 
         // Create locations
         Location london = new Location("LOC001", "London", 51.5074, -0.1278);
         Location manchester = new Location("LOC002", "Manchester", 53.4808, -2.2426);
         Location birmingham = new Location("LOC003", "Birmingham", 52.4862, -1.8904);
         Location liverpool = new Location("LOC004", "Liverpool", 53.4084, -2.9916);
-
-        //------------------------------------------------------------//
 
         // Add locations to network
         System.out.println("Adding locations...");
@@ -38,138 +47,108 @@ public class Main {
         network.addLocation(birmingham);
         network.addLocation(liverpool);
 
-        //------------------------------------------------------------//
-
+        // Create connections (road network)
         System.out.println("\nCreating connections...");
-        network.addConnection("LOC001", "LOC002",330,260);  // London ↔ Manchester
-        network.addConnection("LOC001", "LOC003",163,120);  // London ↔ Birmingham
-        network.addConnection("LOC002", "LOC003",135,90);  // Manchester ↔ Birmingham
-        network.addConnection("LOC002", "LOC004",56,45);
-        System.out.println("\n");// Manchester ↔ Liverpool
+        network.addConnection("LOC001", "LOC002", 330, 260);  // London ↔ Manchester
+        network.addConnection("LOC001", "LOC003", 163, 120);  // London ↔ Birmingham
+        network.addConnection("LOC002", "LOC003", 135, 90);   // Manchester ↔ Birmingham
+        network.addConnection("LOC002", "LOC004", 56, 45);    // Manchester ↔ Liverpool
+
         System.out.println();
+    }
 
-        //------------------------------------------------------------//
-        //unit type like vehicles such as fire engines and what not
-        ResponseUnit ambulance = new ResponseUnit("UNIT001", london, "AMBULANCE", true);
-        ResponseUnit ambulance2 = new ResponseUnit("UNIT002", manchester, "AMBULANCE", true);  // Change to UNIT002
-        ResponseUnit policeCar = new ResponseUnit("UNIT003", birmingham, "POLICE", true);      // Change to UNIT003
-        ResponseUnit policeCar2 = new ResponseUnit("UNIT004", liverpool, "POLICE", true);      // Change to UNIT004
+    /**
+     * Register response units at various locations
+     */
+    private static void registerUnits(EmergencyNetwork network) {
+        System.out.println("=== REGISTERING RESPONSE UNITS ===\n");
 
-        //incident
-        Incident fire = new Incident("INC001", "Arson", false, london, IncidentSeverity.HIGH);  // Changed ID to INC001
+        // Get locations for unit placement
+        Location london = network.getLocation("LOC001");
+        Location manchester = network.getLocation("LOC002");
+        Location birmingham = network.getLocation("LOC003");
+        Location liverpool = network.getLocation("LOC004");
 
-        //Location
-        Location retrieved = network.getLocation("LOC001");  // Changed to valid location ID
+        // Create and register units
+        ResponseUnit ambulance1 = new ResponseUnit("UNIT001", london, "AMBULANCE", true);
+        ResponseUnit ambulance2 = new ResponseUnit("UNIT002", manchester, "AMBULANCE", true);
+        ResponseUnit police1 = new ResponseUnit("UNIT003", birmingham, "POLICE", true);
+        ResponseUnit police2 = new ResponseUnit("UNIT004", liverpool, "POLICE", true);
 
-        //------------------------------------------------------------//
-
-
-        System.out.println("Retrieved location: " + retrieved.getName());
-        System.out.println("Getting connections for london");
-
-        List<EmergencyNetwork.Connection> londonConnections = network.getConnections("LOC001");
-        System.out.println("London connects to: " + londonConnections.toString());
-
-        System.out.println("Unit: " + ambulance.getType());
-        System.out.println("Incident at: " + fire.getLocation().getName());
-        System.out.println("Severity: " + fire.getSeverity());
-        System.out.println("Got location: " + retrieved.getName() + "\n");
-
-
-        System.out.println("Checking response units...");
-
-        network.addUnit(ambulance);
-        network.addUnit(policeCar);
-        network.addUnit(policeCar2);
+        network.addUnit(ambulance1);
         network.addUnit(ambulance2);
+        network.addUnit(police1);
+        network.addUnit(police2);
 
-        ResponseUnit dispatched = allocator.findNearestUnit(fire);
+        System.out.println();
+    }
 
-        String dispatchedLocationId = dispatched.getLocation().getId();
-        String incidentLocationId = fire.getLocation().getId();
+    /**
+     * Test dynamic network updates (Phase 2)
+     */
+    private static void testDynamicUpdates(EmergencyNetwork network, NetworkManager manager) {
+        System.out.println("=== TESTING DYNAMIC UPDATES ===\n");
 
-        // After creating your network and connections...
-
-        System.out.println("\n=== Testing Dynamic Updates ===");
-
-
-
-// Show original connection time
-
+        // Test connection time update
         double originalTime = network.getConnectionTme("LOC001", "LOC002");
         System.out.println("Original London-Manchester time: " + originalTime + " minutes");
 
-// Simulate traffic congestion - double the travel time!
-        manager.updateConnectionTime("LOC001", "LOC002", 480);  // Was 240, now 480
+        manager.updateConnectionTime("LOC001", "LOC002", 480);  // Simulate traffic
 
-// Check the updated time
         double newTime = network.getConnectionTme("LOC001", "LOC002");
-        System.out.println("After traffic update: " + newTime + " minutes");
+        System.out.println("After traffic congestion: " + newTime + " minutes");
 
-// Simulate road closure - remove a connection
+        // Test connection removal
         System.out.println("\nSimulating road closure...");
-        manager.removeConnection("LOC002", "LOC004");  // Close Manchester-Liverpool road
+        manager.removeConnection("LOC002", "LOC004");
 
-        Incident incident1 = new Incident("INC001", "Minor injury", false, london, IncidentSeverity.LOW);
-        Incident incident2 = new Incident("INC002", "House fire", false, manchester, IncidentSeverity.HIGH);
-        Incident incident3 = new Incident("INC003", "Heart attack", false, birmingham, IncidentSeverity.CRITICAL);
-        Incident incident4 = new Incident("INC004", "Car accident", false, liverpool, IncidentSeverity.MEDIUM);
-
-// Add them in random order
-        incidentQueue.addIncident(incident1);  // LOW
-        incidentQueue.addIncident(incident2);  // HIGH
-        incidentQueue.addIncident(incident3);  // CRITICAL
-        incidentQueue.addIncident(incident4);  // MEDIUM
-
-        System.out.println("\nQueue size: " + incidentQueue.Size());
-
-// Process them - they should come out in priority order!
-        System.out.println("\n=== Processing Incidents by Priority ===");
-        while (incidentQueue.hasIncidents()) {
-            Incident next = incidentQueue.getNext();
-            System.out.println("  → " + next.getDescription() + " at " + next.getLocation().getName());
-        }
-
-
-
-
-
-
-// Try to get time for closed road
         double closedTime = network.getConnectionTme("LOC002", "LOC004");
-        System.out.println("Manchester-Liverpool time: " + (closedTime == -1 ? "ROAD CLOSED" : closedTime + " min"));
+        System.out.println("Manchester-Liverpool: " + (closedTime == -1 ? "ROAD CLOSED ✅" : closedTime + " min"));
 
+        // Restore connection for later tests
+        network.addConnection("LOC002", "LOC004", 56, 45);
+        System.out.println("Road reopened for testing\n");
+    }
 
-        if (dispatched != null) {
-            System.out.println("Incident: " + fire.getDescription() + " at " + fire.getLocation().getName());
-            System.out.println("Dispatching: " + dispatched.getId() + " (" + dispatched.getType() + ")");
-            System.out.println("From: " + dispatched.getLocation().getName());
-            double time = network.getConnectionTme(dispatchedLocationId, incidentLocationId);
-            if (time != -1) {  // Changed from != 0 to != -1 (getConnectionTime returns -1 if not connected)
-                System.out.println("Travel time from " + dispatched.getLocation().getName() +
-                        " to " + fire.getLocation().getName() + ": " + time + " minutes");
-            } else {
-                System.out.println("Locations not directly connected");
-            }
+    /**
+     * Test concurrent incident management with priority queue (Phase 2)
+     */
+    private static void testIncidentManagement(EmergencyNetwork network, Dispatcher dispatcher) {
+        System.out.println("=== TESTING CONCURRENT INCIDENT MANAGEMENT ===\n");
 
+        // Get locations
+        Location london = network.getLocation("LOC001");
+        Location manchester = network.getLocation("LOC002");
+        Location birmingham = network.getLocation("LOC003");
+        Location liverpool = network.getLocation("LOC004");
 
-            double distance = network.calculateDistance(dispatched.getLocation(), fire.getLocation());
-            System.out.println("Distance: " + distance + " km");
+        // Report multiple incidents (different locations and severities)
+        System.out.println("Reporting incidents...");
+        network.reportIncident(new Incident("INC001", "Minor injury", false, liverpool, IncidentSeverity.LOW));
+        network.reportIncident(new Incident("INC002", "House fire", false, birmingham, IncidentSeverity.HIGH));
+        network.reportIncident(new Incident("INC003", "Heart attack", false, london, IncidentSeverity.CRITICAL));
+        network.reportIncident(new Incident("INC004", "Car crash", false, manchester, IncidentSeverity.MEDIUM));
 
-            // Mark unit as unavailable (cos it's been dispatched)
-            dispatched.setAvailable(false);
-        } else {
-            System.out.println("No available units!");
+        System.out.println("\nIncidents in queue: " + network.getIncidentQueue().Size());
+        System.out.println("Note: Should process in priority order (CRITICAL → HIGH → MEDIUM → LOW)\n");
+
+        // Process all incidents
+        dispatcher.processQueue();
+
+        // Show final unit status
+        printUnitStatus(network);
+    }
+
+    /**
+     * Print status of all response units
+     */
+    private static void printUnitStatus(EmergencyNetwork network) {
+        System.out.println("\n=== UNIT STATUS ===");
+        for (ResponseUnit unit : network.getUnits()) {
+            String status = unit.isAvailable() ? "AVAILABLE ✅" : "BUSY ❌";
+            System.out.println(unit.getId() + " (" + unit.getType() + ") at " +
+                    unit.getLocation().getName() + ": " + status);
         }
-        System.out.println( );
-
-
-
-
-
-
-
-
-
+        System.out.println();
     }
 }
