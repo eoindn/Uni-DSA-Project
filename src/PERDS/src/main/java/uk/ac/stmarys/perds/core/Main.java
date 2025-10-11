@@ -1,6 +1,7 @@
 package PERDS.src.main.java.uk.ac.stmarys.perds.core;
 
 import PERDS.src.main.java.uk.ac.stmarys.perds.allocation.BasicAllocator;
+import PERDS.src.main.java.uk.ac.stmarys.perds.allocation.OptimisedAllocator;
 import PERDS.src.main.java.uk.ac.stmarys.perds.network.EmergencyNetwork;
 import PERDS.src.main.java.uk.ac.stmarys.perds.network.NetworkManager;
 import PERDS.src.main.java.uk.ac.stmarys.perds.scheduling.Dispatcher;
@@ -9,7 +10,7 @@ public class Main {
 
     public static void main(String[] args) {
 
-        // Initialize core systems
+        // Initialise core systems
         EmergencyNetwork network = new EmergencyNetwork();
         BasicAllocator allocator = new BasicAllocator(network);
         NetworkManager manager = new NetworkManager(network);
@@ -26,6 +27,8 @@ public class Main {
 
         // Test concurrent incident management
         testIncidentManagement(network, dispatcher);
+
+        testOptimisedAllocator(network);
     }
 
     /**
@@ -167,5 +170,42 @@ public class Main {
                     unit.getLocation().getName() + ": " + status);
         }
         System.out.println();
+    }
+
+    private static void testOptimisedAllocator(EmergencyNetwork network){
+        System.out.println("=== TESTING OPTIMIZED ALLOCATION (MULTI-CRITERIA) ===\n");
+
+        network.getUnits().clear();
+
+        Location london = network.getLocation("LOC001");
+        Location manchester = network.getLocation("LOC002");
+        Location birmingham = network.getLocation("LOC003");
+
+        // Add fresh available units
+        network.addUnit(new ResponseUnit("UNIT005", manchester, "AMBULANCE", true));
+        network.addUnit(new ResponseUnit("UNIT006", birmingham, "POLICE", true));
+        network.addUnit(new ResponseUnit("UNIT007", london, "FIRE_TRUCK", true));
+
+        OptimisedAllocator goodAllocator = new OptimisedAllocator(network);
+        Incident incident1 = new Incident("123","Shot in heart",false,network.getLocation("LOC001"),
+                IncidentSeverity.HIGH);
+
+        System.out.println("Incident: " + incident1.getDescription());
+        System.out.println("Location: " + incident1.getLocation().getName());
+        System.out.println("Severity: " + incident1.getSeverity() + "\n");
+
+        ResponseUnit best = goodAllocator.findBestUnit(incident1);
+
+
+        if (best != null) {
+            System.out.println("\nBest match: " + best.getType() + " from " +
+                    best.getLocation().getName());
+            System.out.println("(Should prefer AMBULANCE for medical emergency)");
+        }
+
+
+
+
+
     }
 }
