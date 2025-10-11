@@ -43,4 +43,12 @@ public class Dispatcher {
                 distance);
         unit.setAvailable(false);
     }
+    //simulate freeing up a unit used in the incident
+    public void resolveIncident(Incident incident, ResponseUnit unit){
+
+        incident.setResolved(true);
+        unit.setAvailable(true);
+        System.out.println("Incident resolved: " + incident.getDescription());
+        System.out.println("Unit: " + unit.getId() + " is now available");
+    }
 }

@@ -16,7 +16,7 @@ public class BasicAllocator {
     private EmergencyNetwork network;
 
     public BasicAllocator(EmergencyNetwork network) {
-        this.network= network;
+        this.network = network;
     }
 
 

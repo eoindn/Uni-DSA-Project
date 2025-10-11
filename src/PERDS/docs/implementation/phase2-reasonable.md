@@ -57,4 +57,4 @@ Create a basic emergency network with simple incident registration and nearest-u
 
 ### TODO
 - Basic Reallocation - When units finish, make them available again for next incident
--pretty much the only thing left for this
+-pretty much the only thing left for this -> DONE ✅

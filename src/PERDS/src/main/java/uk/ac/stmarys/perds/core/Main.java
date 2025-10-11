@@ -135,7 +135,24 @@ public class Main {
         // Process all incidents
         dispatcher.processQueue();
 
-        // Show final unit status
+        System.out.println("=== Testing Basic Reallocation ===\n");
+
+        // Get first unit and incident (paired from dispatch)
+
+
+        ResponseUnit busyUnit = network.getUnits().get(0);
+        Incident resolvedIncident = new Incident("INC001", "Heart attack", true,
+                network.getLocation("LOC001"), IncidentSeverity.CRITICAL);
+
+        // complete the incident - frees up the unit
+        dispatcher.resolveIncident(resolvedIncident, busyUnit);
+
+        network.reportIncident(new Incident("INC005", "New fire", false,
+                network.getLocation("LOC002"), IncidentSeverity.HIGH));
+
+        System.out.println("Processing new incident with reallocated unit...");
+        dispatcher.processQueue();
+
         printUnitStatus(network);
     }
 
